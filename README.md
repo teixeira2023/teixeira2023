@@ -37,4 +37,13 @@ I'm focused on:
   <div style="display: inline_block"><br>
   <a href="https://www.linkedin.com/in/alan-freitas-8862634b" target="_blank"><img src="https://img.shields.io/badge/-LinkedIn-%230077B5?style=for-the-badge&logo=linkedin&logoColor=white" target="_blank"></a> 
   
-</div>
+
+<br>
+<br>
+
+  ##
+  
+<br>
+<br>
+<img align="center" alt="Python" height="360" width="480" src= "https://quatrorodas.abril.com.br/wp-content/uploads/2017/07/giphy-2.gif">
+ </div>
