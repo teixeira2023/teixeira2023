@@ -63,3 +63,4 @@ I'm focused on:
 <br>
 <img align="center" alt="Python" height="260" width="480" src= "https://quatrorodas.abril.com.br/wp-content/uploads/2017/07/giphy-2.gif">
  </div>
+
