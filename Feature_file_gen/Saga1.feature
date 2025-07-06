@@ -15,5 +15,7 @@ Feature: First saga test
       | user_type | action    | result           |
       | admin     | login     | dashboard access |
       | user      | register  | welcome message  |
-    Given John likes reading books
+    Given John likes reading books 
+    Given John likes cooking for his family
+    Given John likes traveling twice a year
 
