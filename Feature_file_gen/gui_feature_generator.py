@@ -220,13 +220,13 @@ class FeatureGeneratorGUI:
             new_lines = []
             for context in relevant_contexts:
                 # Extract the most relevant part of the context
-                # Look for sentences that contain the name keyword
-                name_keyword = self.selected_name_keyword.get()
+                # Look for sentences that contain the hobby keyword
+                hobby_keyword = self.selected_hobby_keyword.get()
                 sentences = context.split(';')
                 
                 for sentence in sentences:
                     sentence = sentence.strip()
-                    if name_keyword.lower() in sentence.lower():
+                    if hobby_keyword.lower() in sentence.lower():
                         # Format as Given statement
                         given_statement = f"    Given {sentence}\n"
                         new_lines.append(given_statement)
