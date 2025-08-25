@@ -9,7 +9,7 @@ class FeatureGeneratorGUI:
     def __init__(self, root):
         self.root = root
         self.root.title("Feature File Generator")
-        self.root.geometry("800x600")
+        self.root.geometry("800x800")
         
         # Variables
         self.csv_file_path = tk.StringVar()
@@ -88,8 +88,23 @@ class FeatureGeneratorGUI:
         self.preview_text.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
         preview_scrollbar.grid(row=0, column=1, sticky=(tk.N, tk.S))
         
+        # Last Column Content Frame
+        last_column_frame = ttk.LabelFrame(main_frame, text="Last Column Content", padding="10")
+        last_column_frame.grid(row=8, column=0, columnspan=3, sticky=(tk.W, tk.E, tk.N, tk.S), pady=10)
+        last_column_frame.columnconfigure(0, weight=1)
+        last_column_frame.rowconfigure(0, weight=1)
+        
+        # Last Column Text
+        self.last_column_text = tk.Text(last_column_frame, height=6, width=80)
+        last_column_scrollbar = ttk.Scrollbar(last_column_frame, orient=tk.VERTICAL, command=self.last_column_text.yview)
+        self.last_column_text.configure(yscrollcommand=last_column_scrollbar.set)
+        
+        self.last_column_text.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+        last_column_scrollbar.grid(row=0, column=1, sticky=(tk.N, tk.S))
+        
         # Configure main frame row weights
         main_frame.rowconfigure(7, weight=1)
+        main_frame.rowconfigure(8, weight=1)
         
     def browse_csv_file(self):
         filename = filedialog.askopenfilename(
@@ -187,8 +202,34 @@ class FeatureGeneratorGUI:
                 
         return relevant_contexts
         
+    def get_last_column_content(self):
+        if self.csv_data is None:
+            return []
+            
+        name_keyword = self.selected_name_keyword.get()
+        hobby_keyword = self.selected_hobby_keyword.get()
+        
+        if not name_keyword or not hobby_keyword:
+            return []
+            
+        last_column_content = []
+        
+        for _, row in self.csv_data.iterrows():
+            name = str(row['name']).lower()
+            hobbies = str(row['hobbies']).lower()
+            
+            # Check if both keywords match
+            if (name_keyword.lower() in name and 
+                hobby_keyword.lower() in hobbies):
+                # Get the last column content
+                last_column_value = row.iloc[-1]  # Get the last column value
+                last_column_content.append(str(last_column_value))
+                
+        return last_column_content
+        
     def update_context_preview(self):
         relevant_contexts = self.find_relevant_context()
+        last_column_content = self.get_last_column_content()
         
         self.context_text.delete(1.0, tk.END)
         if relevant_contexts:
@@ -196,6 +237,14 @@ class FeatureGeneratorGUI:
                 self.context_text.insert(tk.END, f"{i}. {context}\n")
         else:
             self.context_text.insert(tk.END, "No relevant context found for selected keywords.")
+            
+        # Update last column content
+        self.last_column_text.delete(1.0, tk.END)
+        if last_column_content:
+            for i, content in enumerate(last_column_content, 1):
+                self.last_column_text.insert(tk.END, f"{i}. {content}\n")
+        else:
+            self.last_column_text.insert(tk.END, "No last column content found for selected keywords.")
             
     def add_to_feature_file(self):
         if not self.feature_file_path.get():

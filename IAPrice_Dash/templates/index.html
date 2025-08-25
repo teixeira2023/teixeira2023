@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de LLMs - LLM Stats</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Plotly.js -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --danger-color: #e74c3c;
+            --warning-color: #f39c12;
+            --dark-bg: #1a1a1a;
+            --card-bg: #2d2d2d;
+            --text-color: #ffffff;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--dark-bg) 0%, #2c3e50 100%);
+            color: var(--text-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: rgba(44, 62, 80, 0.95) !important;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            color: white;
+        }
+
+        .stat-card.positive {
+            background: linear-gradient(135deg, var(--success-color), #2ecc71);
+        }
+
+        .stat-card.negative {
+            background: linear-gradient(135deg, var(--danger-color), #c0392b);
+        }
+
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-top: 5px solid var(--secondary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .crypto-table {
+            background: var(--card-bg);
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .crypto-table th {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+        }
+
+        .crypto-table td {
+            border-color: rgba(255, 255, 255, 0.1);
+            color: var(--text-color);
+        }
+
+        .positive-change {
+            color: var(--success-color);
+        }
+
+        .negative-change {
+            color: var(--danger-color);
+        }
+
+        .refresh-btn {
+            background: var(--secondary-color);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .refresh-btn:hover {
+            background: #2980b9;
+            transform: rotate(180deg);
+        }
+
+        .chart-container {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-brain me-2"></i>
+                LLM Stats Dashboard
+            </a>
+            <div class="d-flex align-items-center">
+                <button class="btn refresh-btn me-3" onclick="refreshData()">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+                <span class="text-light" id="last-updated">Última atualização: --</span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Loading Screen -->
+        <div id="loading-screen" class="loading">
+            <div class="spinner"></div>
+        </div>
+
+        <!-- Dashboard Content -->
+        <div id="dashboard-content" style="display: none;">
+            <!-- Stats Cards -->
+            <div class="row mb-4">
+                <div class="col-md-3 mb-3">
+                    <div class="card stat-card">
+                        <div class="card-body text-center">
+                            <i class="fas fa-trophy fa-2x mb-2"></i>
+                            <h5 class="card-title">Score Médio</h5>
+                            <h3 id="avg-benchmark-score">--</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card stat-card">
+                        <div class="card-body text-center">
+                            <i class="fas fa-dollar-sign fa-2x mb-2"></i>
+                            <h5 class="card-title">Preço Médio</h5>
+                            <h3 id="avg-price">$--</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card stat-card positive">
+                        <div class="card-body text-center">
+                            <i class="fas fa-rocket fa-2x mb-2"></i>
+                            <h5 class="card-title">Mais Rápido</h5>
+                            <h3 id="fastest-model">--</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card stat-card negative">
+                        <div class="card-body text-center">
+                            <i class="fas fa-dollar-sign fa-2x mb-2"></i>
+                            <h5 class="card-title">Mais Caro</h5>
+                            <h3 id="most-expensive">--</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="row mb-4">
+                <div class="col-md-6 mb-3">
+                    <div class="chart-container">
+                        <div id="benchmark-chart"></div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="chart-container">
+                        <div id="price-chart"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="chart-container">
+                        <div id="speed-chart"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Crypto Table -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-list me-2"></i>
+                                Top 10 LLMs
+                            </h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover crypto-table mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Modelo</th>
+                                            <th>Provedor</th>
+                                            <th>Benchmark Score</th>
+                                            <th>Preço/1K Tokens</th>
+                                            <th>Velocidade</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="llm-table-body">
+                                        <!-- Dados serão inseridos aqui -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Função para formatar números
+        function formatNumber(num) {
+            if (num >= 1e12) return (num / 1e12).toFixed(2) + 'T';
+            if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
+            if (num >= 1e6) return (num / 1e6).toFixed(2) + 'M';
+            if (num >= 1e3) return (num / 1e3).toFixed(2) + 'K';
+            return num.toFixed(2);
+        }
+
+        // Função para formatar preços
+        function formatPrice(price) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 6
+            }).format(price);
+        }
+
+        // Função para atualizar estatísticas
+        function updateStats(stats) {
+            document.getElementById('avg-benchmark-score').textContent = stats.avg_benchmark_score?.toFixed(1);
+            document.getElementById('avg-price').textContent = '$' + stats.avg_price?.toFixed(4);
+            document.getElementById('fastest-model').textContent = stats.fastest?.name + ' (' + stats.fastest?.speed_tokens_per_sec + ' t/s)';
+            document.getElementById('most-expensive').textContent = stats.most_expensive?.name + ' ($' + stats.most_expensive?.price_per_1k_tokens?.toFixed(4) + ')';
+        }
+
+        // Função para atualizar tabela de LLMs
+        function updateLLMTable(llmData) {
+            const tbody = document.getElementById('llm-table-body');
+            tbody.innerHTML = '';
+
+            llmData.forEach((model, index) => {
+                const row = document.createElement('tr');
+                const scoreClass = model.benchmark_score >= 90 ? 'positive-change' : model.benchmark_score >= 80 ? 'text-warning' : 'negative-change';
+
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="me-2">
+                                <i class="fas fa-brain text-primary"></i>
+                            </div>
+                            <div>
+                                <strong>${model.name}</strong><br>
+                                <small class="text-muted">${model.category}</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="badge bg-secondary">${model.provider}</span></td>
+                    <td class="${scoreClass}">
+                        <strong>${model.benchmark_score.toFixed(1)}</strong>
+                    </td>
+                    <td><strong>$${model.price_per_1k_tokens.toFixed(4)}</strong></td>
+                    <td><strong>${model.speed_tokens_per_sec} t/s</strong></td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Função para carregar gráficos
+        function loadCharts() {
+            fetch('/api/charts')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        console.error('Erro ao carregar gráficos:', data.error);
+                        return;
+                    }
+
+                    // Renderizar gráficos
+                    Plotly.newPlot('benchmark-chart', JSON.parse(data.benchmark).data, JSON.parse(data.benchmark).layout);
+                    Plotly.newPlot('price-chart', JSON.parse(data.price).data, JSON.parse(data.price).layout);
+                    Plotly.newPlot('speed-chart', JSON.parse(data.speed).data, JSON.parse(data.speed).layout);
+                })
+                .catch(error => {
+                    console.error('Erro ao carregar gráficos:', error);
+                });
+        }
+
+        // Função para carregar dados do dashboard
+        function loadDashboardData() {
+            fetch('/api/dashboard-data')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        console.error('Erro ao carregar dados:', data.error);
+                        return;
+                    }
+
+                    // Atualizar tabela
+                    updateLLMTable(data.llm_data);
+
+                    // Atualizar timestamp
+                    const lastUpdated = new Date(data.last_updated);
+                    document.getElementById('last-updated').textContent =
+                        `Última atualização: ${lastUpdated.toLocaleTimeString('pt-BR')}`;
+                })
+                .catch(error => {
+                    console.error('Erro ao carregar dados:', error);
+                });
+        }
+
+        // Função para carregar estatísticas
+        function loadStats() {
+            fetch('/api/stats')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        console.error('Erro ao carregar estatísticas:', data.error);
+                        return;
+                    }
+
+                    updateStats(data);
+                })
+                .catch(error => {
+                    console.error('Erro ao carregar estatísticas:', error);
+                });
+        }
+
+        // Função para atualizar todos os dados
+        function refreshData() {
+            const refreshBtn = document.querySelector('.refresh-btn i');
+            refreshBtn.classList.add('fa-spin');
+
+            Promise.all([
+                loadDashboardData(),
+                loadStats(),
+                loadCharts()
+            ]).finally(() => {
+                setTimeout(() => {
+                    refreshBtn.classList.remove('fa-spin');
+                }, 1000);
+            });
+        }
+
+        // Função de inicialização
+        function init() {
+            // Esconder loading e mostrar conteúdo
+            document.getElementById('loading-screen').style.display = 'none';
+            document.getElementById('dashboard-content').style.display = 'block';
+
+            // Carregar dados iniciais
+            refreshData();
+
+            // Atualizar dados a cada 5 minutos
+            setInterval(refreshData, 300000);
+        }
+
+        // Inicializar quando a página carregar
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+
+</html>
