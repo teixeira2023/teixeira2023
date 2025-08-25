@@ -301,6 +301,14 @@
         .door h4 {
             margin-bottom: 10px;
             font-size: 1em;
+            line-height: 1.3;
+        }
+
+        .door h4 small {
+            display: block;
+            margin-top: 5px;
+            font-weight: normal;
+            opacity: 0.9;
         }
 
         .door-status {
@@ -439,7 +447,7 @@
                     <label class="config-option">
                         <input type="radio" name="doorConfig" value="delayed">
                         <span class="radio-custom"></span>
-                        Delayed (destrava após 6s)
+                        Delayed (inibido por 6s, travado por 10s)
                     </label>
                 </div>
             </div>
@@ -563,8 +571,20 @@
 
             bindEvents() {
                 this.elements.crashBtn.addEventListener('click', () => this.activateSOS());
-                this.elements.hazardSwitchBtn.addEventListener('click', () => this.resetSystem('Hazard Switch'));
-                this.elements.keyfobPanicBtn.addEventListener('click', () => this.resetSystem('Keyfob Panic'));
+                this.elements.hazardSwitchBtn.addEventListener('click', () => {
+                    if (this.elements.hazardSwitchBtn.classList.contains('inhibited')) {
+                        this.addLogEntry('Tentativa de reset via Hazard Switch BLOQUEADA - sistema inibido por 10 segundos', 'warning');
+                        return;
+                    }
+                    this.resetSystem('Hazard Switch');
+                });
+                this.elements.keyfobPanicBtn.addEventListener('click', () => {
+                    if (this.elements.keyfobPanicBtn.classList.contains('inhibited')) {
+                        this.addLogEntry('Tentativa de reset via Keyfob Panic BLOQUEADA - sistema inibido por 10 segundos', 'warning');
+                        return;
+                    }
+                    this.resetSystem('Keyfob Panic');
+                });
                 this.elements.keyfobUnlockBtn.addEventListener('click', () => this.attemptDoorUnlock());
                 this.elements.saveLogBtn.addEventListener('click', () => this.saveLogToFile());
 
@@ -609,6 +629,9 @@
                 // Timer para iluminação interna (10s)
                 this.scheduleInternalLights();
 
+                // Inibir botões de reset por 10 segundos
+                this.inhibitResetButtons();
+
                 this.addLogEntry('SOS Crash Alert ATIVADO!', 'emergency');
                 this.addLogEntry('Setas piscando', 'info');
             }
@@ -649,6 +672,12 @@
                     const statusElement = door.querySelector('.door-status');
                     statusElement.textContent = 'DESTRAVADA';
                     statusElement.className = 'door-status door-unlocked';
+
+                    // Remover descrição de tempo
+                    const doorTitle = door.querySelector('h4');
+                    if (doorTitle.innerHTML.includes('<br><small')) {
+                        doorTitle.innerHTML = doorTitle.textContent;
+                    }
                 });
                 this.doorsInhibited = false;
 
@@ -663,6 +692,12 @@
                     const statusElement = door.querySelector('.door-status');
                     statusElement.textContent = 'INIBIDO';
                     statusElement.className = 'door-status door-locked';
+
+                    // Adicionar descrição com informações de tempo
+                    const doorTitle = door.querySelector('h4');
+                    if (this.doorConfig === 'delayed') {
+                        doorTitle.innerHTML = `${doorTitle.textContent}<br><small style="color: #ffd700; font-size: 0.8em;">🔒 Inibido por 6s | 🔓 Destrava em 10s</small>`;
+                    }
                 });
                 this.doorsInhibited = true;
 
@@ -673,11 +708,37 @@
 
             scheduleDoorUnlock() {
                 this.doorUnlockTimer = setTimeout(() => {
-                    this.unlockAllDoors();
-                    this.addLogEntry('Portas destravadas após período de inibição (6s)', 'info');
+                    // Após 6 segundos, remover inibição mas manter travadas por mais 4 segundos
+                    this.removeDoorInhibition();
+                    this.addLogEntry('Inibição das portas removida após 6 segundos', 'info');
+
+                    // Agendar destravamento total após 10 segundos
+                    setTimeout(() => {
+                        this.unlockAllDoors();
+                        this.addLogEntry('Portas destravadas após período total de 10 segundos', 'info');
+                    }, 4000); // 4 segundos adicionais (6s + 4s = 10s total)
                 }, 6000); // 6 segundos
             }
 
+            removeDoorInhibition() {
+                Object.values(this.elements.doors).forEach(door => {
+                    door.classList.remove('inhibited');
+                    const statusElement = door.querySelector('.door-status');
+                    statusElement.textContent = 'TRAVADA';
+                    statusElement.className = 'door-status door-locked';
+
+                    // Atualizar descrição para mostrar que ainda está travada
+                    const doorTitle = door.querySelector('h4');
+                    if (this.doorConfig === 'delayed') {
+                        doorTitle.innerHTML = `${doorTitle.textContent.split('<br>')[0]}<br><small style="color: #ffd700; font-size: 0.8em;">🔓 Destrava em 4s</small>`;
+                    }
+                });
+                this.doorsInhibited = false;
+
+                // Remover inibição do botão de destravamento
+                this.elements.keyfobUnlockBtn.classList.remove('inhibited');
+                this.elements.keyfobUnlockBtn.title = '';
+            }
 
 
             attemptDoorUnlock() {
@@ -688,6 +749,12 @@
 
                 if (!this.isActivated) {
                     this.addLogEntry('Tentativa de reset via keyfob - sistema não ativado', 'info');
+                    return;
+                }
+
+                // Verificar se o botão ainda está inibido (primeiros 10 segundos)
+                if (this.elements.keyfobUnlockBtn.classList.contains('inhibited')) {
+                    this.addLogEntry('Tentativa de reset via keyfob BLOQUEADA - sistema inibido por 10 segundos', 'warning');
                     return;
                 }
 
@@ -742,12 +809,24 @@
                     const statusElement = door.querySelector('.door-status');
                     statusElement.textContent = 'TRAVADA';
                     statusElement.className = 'door-status door-locked';
+
+                    // Remover descrição de tempo
+                    const doorTitle = door.querySelector('h4');
+                    if (doorTitle.innerHTML.includes('<br><small')) {
+                        doorTitle.innerHTML = doorTitle.textContent;
+                    }
                 });
                 this.doorsInhibited = false;
 
                 // Remover inibição do botão de destravamento
                 this.elements.keyfobUnlockBtn.classList.remove('inhibited');
                 this.elements.keyfobUnlockBtn.title = '';
+
+                // Remover inibição dos outros botões de reset
+                this.elements.hazardSwitchBtn.classList.remove('inhibited');
+                this.elements.hazardSwitchBtn.title = '';
+                this.elements.keyfobPanicBtn.classList.remove('inhibited');
+                this.elements.keyfobPanicBtn.title = '';
 
                 this.addLogEntry(`Sistema resetado via ${source}`, 'normal');
             }
@@ -801,6 +880,35 @@
                 URL.revokeObjectURL(url);
 
                 this.addLogEntry('Log salvo com sucesso em arquivo TXT', 'info');
+            }
+
+            inhibitResetButtons() {
+                this.elements.hazardSwitchBtn.classList.add('inhibited');
+                this.elements.hazardSwitchBtn.title = 'Sistema inibido - aguarde 10 segundos';
+                this.elements.keyfobPanicBtn.classList.add('inhibited');
+                this.elements.keyfobPanicBtn.title = 'Sistema inibido - aguarde 10 segundos';
+                this.elements.keyfobUnlockBtn.classList.add('inhibited');
+                this.elements.keyfobUnlockBtn.title = 'Sistema inibido - aguarde 10 segundos';
+
+                // Remover inibição após 10 segundos
+                setTimeout(() => {
+                    this.enableResetButtons();
+                }, 10000);
+            }
+
+            enableResetButtons() {
+                this.elements.hazardSwitchBtn.classList.remove('inhibited');
+                this.elements.hazardSwitchBtn.title = '';
+                this.elements.keyfobPanicBtn.classList.remove('inhibited');
+                this.elements.keyfobPanicBtn.title = '';
+
+                // Para o keyfob unlock, verificar se as portas ainda estão inibidas
+                if (!this.doorsInhibited) {
+                    this.elements.keyfobUnlockBtn.classList.remove('inhibited');
+                    this.elements.keyfobUnlockBtn.title = '';
+                }
+
+                this.addLogEntry('Botões de reset habilitados após 10 segundos', 'info');
             }
         }
 
