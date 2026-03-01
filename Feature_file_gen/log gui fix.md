@@ -1,3 +1,18 @@
+            ## 🛠️ Correção: geração de statements "Given"
+
+            Este documento descreve a correção aplicada no gerador de arquivos de feature (método `add_to_feature_file`) para que os statements "Given" usem a sentença do campo `context` que contém a palavra-chave do hobby selecionado, em vez de usar sempre a primeira sentença.
+
+            ---
+
+            ### 📌 Problema (resumo)
+
+            O código original procurava a sentença que contivesse a *name keyword* (nome), mas o correto é procurar a sentença que contenha a *hobby keyword* (hobby) selecionada pelo usuário. Por isso, em muitos casos a frase certa não era escolhida e o resultado ficava menos relevante.
+
+            ---
+
+            ### 🔍 Antes (trecho original)
+
+            ```python
             # Add Given statements
             new_lines = []
             for context in relevant_contexts:
@@ -5,7 +20,7 @@
                 # Look for sentences that contain the name keyword
                 name_keyword = self.selected_name_keyword.get()
                 sentences = context.split(';')
-                
+
                 for sentence in sentences:
                     sentence = sentence.strip()
                     if name_keyword.lower() in sentence.lower():
@@ -17,9 +32,13 @@
                     # If no specific sentence found, use the whole context
                     given_statement = f"    Given {context}\n"
                     new_lines.append(given_statement)
+            ```
 
-->
+            ---
 
+            ### ✅ Depois (trecho corrigido)
+
+            ```python
             # Add Given statements
             new_lines = []
             for context in relevant_contexts:
@@ -27,7 +46,7 @@
                 # Look for sentences that contain the hobby keyword
                 hobby_keyword = self.selected_hobby_keyword.get()
                 sentences = context.split(';')
-                
+
                 for sentence in sentences:
                     sentence = sentence.strip()
                     if hobby_keyword.lower() in sentence.lower():
@@ -39,17 +58,35 @@
                     # If no specific sentence found, use the whole context
                     given_statement = f"    Given {context}\n"
                     new_lines.append(given_statement)
+            ```
 
-I'll analyze the code and fix the issue where it's only using the first sentence in the context column instead of finding the sentence that matches with the selected hobby keyword.
-Now I can see the issue. In the add_to_feature_file method (lines 200-250), the code is only looking for sentences that contain the name keyword, but it should be looking for sentences that contain the hobby keyword instead. Let me fix this:
-Perfect! I've fixed the issue. The problem was in the add_to_feature_file method where the code was looking for sentences containing the name keyword instead of the hobby keyword.
-Here's what I changed:
-Line 207: Changed the comment from "Look for sentences that contain the name keyword" to "Look for sentences that contain the hobby keyword"
-Line 208: Changed name_keyword = self.selected_name_keyword.get() to hobby_keyword = self.selected_hobby_keyword.get()
-Line 212: Changed the condition from if name_keyword.lower() in sentence.lower(): to if hobby_keyword.lower() in sentence.lower():
-Now the code will:
-Split the context into sentences (using semicolon as delimiter)
-Look for the sentence that contains the selected hobby keyword
-Use that specific sentence for the Given statement
-If no sentence contains the hobby keyword, it will fall back to using the entire context
-This ensures that the generated Given statements are more relevant to the selected hobby, making the feature file more accurate and meaningful.
+            ---
+
+            ### ✨ O que foi alterado
+
+            - 🔁 Substituição da variável de busca: `name_keyword` -> `hobby_keyword`.
+            - 📝 Atualização do comentário explicativo para refletir a lógica correta.
+            - 🧭 Comportamento: agora o código percorre as sentenças separadas por `;` e retorna a sentença que contém o hobby selecionado; caso nenhuma sentença contenha a keyword, usa-se o `context` inteiro como fallback.
+
+            ---
+
+            ### 🧪 Como validar
+
+            1. Execute o gerador/GUI que utiliza `add_to_feature_file`.
+            2. Selecione um hobby diferente e verifique o arquivo `.feature` gerado.
+            3. Confirme que o `Given` agora contém a sentença que inclui o hobby escolhido (e não só a primeira sentença).
+
+            Dica: testar com linhas de `context` que contenham múltiplas sentenças separadas por `;` e onde apenas uma contenha a palavra-chave do hobby.
+
+            ---
+
+            ### 📎 Notas adicionais
+
+            - Esta correção é de baixo risco e não altera a assinatura do método, apenas a lógica interna.
+            - Se houver variações no separador de sentenças (por exemplo, `.` em vez de `;`), considere melhorar o parser dividindo por múltiplos separadores ou usando uma tokenização mais robusta.
+
+            Se quiser, aplico também uma pequena suíte de testes (unitários) para cobrir o caso feliz e um caso de fallback — diga se quer que eu crie os testes em `Feature_file_gen/tests`.
+
+            ---
+
+            ✍️ Atualizado por: correção automática (formato Markdown) — descrição e exemplos em PT-BR
