@@ -65,6 +65,40 @@ function renderGames() {
         
         const cover = game.cover ? game.cover : 'data:image/svg+xml;utf8,<svg width="200" height="300" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="300" fill="%232d3748"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="16" fill="%23a0aec0">Sem Capa</text></svg>';
 
+        let consoleBadge = '';
+        if (game.xbox_stats) {
+            const achievementsText = game.xbox_stats.achievements_total > 0 
+                ? `🏆 ${game.xbox_stats.achievements_current}/${game.xbox_stats.achievements_total}` 
+                : '';
+            const lastPlayed = game.xbox_stats.last_played 
+                ? new Date(game.xbox_stats.last_played).toLocaleDateString('pt-BR') 
+                : 'Nunca jogado';
+
+            consoleBadge = `
+                <div class="platform-stats xbox-theme">
+                    <div class="stat-main">Ⓖ ${game.xbox_stats.gamerscore_current} / ${game.xbox_stats.gamerscore_total}</div>
+                    ${achievementsText ? `<div class="stat-sub">${achievementsText}</div>` : ''}
+                    <div class="stat-date">Visto: ${lastPlayed}</div>
+                </div>
+            `;
+        } else if (game.psn_stats) {
+            const t = game.psn_stats.trophies || {};
+            const trophiesText = (t.platinum || t.gold || t.silver || t.bronze) 
+                ? `🏆 ${t.platinum||0} 🥇 ${t.gold||0} 🥈 ${t.silver||0} 🥉 ${t.bronze||0}` 
+                : '';
+            const lastPlayed = game.psn_stats.last_played 
+                ? new Date(game.psn_stats.last_played).toLocaleDateString('pt-BR') 
+                : 'Nunca jogado';
+
+            consoleBadge = `
+                <div class="platform-stats psn-theme">
+                    <div class="stat-main">⭐ ${game.psn_stats.progress}% Concluído</div>
+                    ${trophiesText ? `<div class="stat-sub">${trophiesText}</div>` : ''}
+                    <div class="stat-date">Visto: ${lastPlayed}</div>
+                </div>
+            `;
+        }
+
         card.innerHTML = `
             <div class="card-image-box">
                 <img src="${cover}" alt="${game.title}" loading="lazy">
@@ -77,6 +111,7 @@ function renderGames() {
                     <span class="tag">${game.genre}</span>
                     ${game.storage && game.storage !== "Padrão" ? `<span class="tag">${game.storage}</span>` : ''}
                 </div>
+                ${consoleBadge}
             </div>
         `;
         // onClick to open on bdjogos if desired

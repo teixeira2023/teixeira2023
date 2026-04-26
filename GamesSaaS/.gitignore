@@ -2,6 +2,8 @@
 rawg_scraper.py
 Joos360HDoriginal.csv
 Joos360HDoriginal.xlsx
+openxbl_key.py
+psn_api.py
 
 # Arquivos de ambiente virtual / Variáveis de ambiente (boa prática)
 .env
