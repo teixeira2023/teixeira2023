@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GamesSaaS - Meu Catálogo</title>
+    <!-- Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <!-- CSS -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Sidebar: Filters -->
+        <aside class="sidebar glass-panel">
+            <div class="logo">
+                <h1>Games<span>SaaS</span></h1>
+            </div>
+
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Buscar jogo..." autocomplete="off">
+            </div>
+            
+            <button id="btnAdmin" class="action-button admin-button" style="margin-top: 16px;">
+                Gerenciar Biblioteca
+            </button>
+
+            <div class="filters" style="margin-top: 16px;">
+
+                <div class="filter-group">
+                    <h3>Playstation</h3>
+                    <div class="accordion-list">
+                        <details class="accordion-item">
+                            <summary>PS3</summary>
+                            <div class="checkbox-list nested-list">
+                                <label class="checkbox-item"><input type="checkbox" value="HD interno" data-platform="PS3" class="filter-nested"><span>HD Interno</span></label>
+                                <label class="checkbox-item"><input type="checkbox" value="HD externo" data-platform="PS3" class="filter-nested"><span>HD Externo</span></label>
+                                <label class="checkbox-item"><input type="checkbox" value="Biblioteca" data-platform="PS3" class="filter-nested"><span>Biblioteca</span></label>
+                                <label class="checkbox-item"><input type="checkbox" value="Mídia Física" data-platform="PS3" class="filter-nested"><span>Mídia Física</span></label>
+                            </div>
+                        </details>
+                        <details class="accordion-item">
+                            <summary>PS4</summary>
+                            <div class="checkbox-list nested-list">
+                                <label class="checkbox-item"><input type="checkbox" value="HD interno" data-platform="Ps4" class="filter-nested"><span>HD Interno</span></label>
+                                <label class="checkbox-item"><input type="checkbox" value="HD externo" data-platform="Ps4" class="filter-nested"><span>HD Externo</span></label>
+                                <label class="checkbox-item"><input type="checkbox" value="Biblioteca" data-platform="Ps4" class="filter-nested"><span>Biblioteca</span></label>
+                                <label class="checkbox-item"><input type="checkbox" value="Mídia Física" data-platform="Ps4" class="filter-nested"><span>Mídia Física</span></label>
+                            </div>
+                        </details>
+                        <details class="accordion-item">
+                            <summary>PS4 Pro</summary>
+                            <div class="checkbox-list nested-list">
+                                <label class="checkbox-item"><input type="checkbox" value="HD interno" data-platform="PS4 Pro" class="filter-nested"><span>HD Interno</span></label>
+                                <label class="checkbox-item"><input type="checkbox" value="HD externo" data-platform="PS4 Pro" class="filter-nested"><span>HD Externo</span></label>
+                                <label class="checkbox-item"><input type="checkbox" value="Biblioteca" data-platform="PS4 Pro" class="filter-nested"><span>Biblioteca</span></label>
+                                <label class="checkbox-item"><input type="checkbox" value="Mídia Física" data-platform="PS4 Pro" class="filter-nested"><span>Mídia Física</span></label>
+                            </div>
+                        </details>
+                        <details class="accordion-item">
+                            <summary>PS5</summary>
+                            <div class="checkbox-list nested-list">
+                                <label class="checkbox-item"><input type="checkbox" value="HD interno" data-platform="PS5" class="filter-nested"><span>HD Interno</span></label>
+                                <label class="checkbox-item"><input type="checkbox" value="HD externo" data-platform="PS5" class="filter-nested"><span>HD Externo</span></label>
+                                <label class="checkbox-item"><input type="checkbox" value="Biblioteca" data-platform="PS5" class="filter-nested"><span>Biblioteca</span></label>
+                                <label class="checkbox-item"><input type="checkbox" value="Mídia Física" data-platform="PS5" class="filter-nested"><span>Mídia Física</span></label>
+                            </div>
+                        </details>
+                    </div>
+                </div>
+
+                <div class="filter-group">
+                    <h3>Microsoft</h3>
+                    <div class="accordion-list">
+                        <details class="accordion-item">
+                            <summary>XBOX 360</summary>
+                            <div class="checkbox-list nested-list">
+                                <label class="checkbox-item"><input type="checkbox" value="HD interno" data-platform="Xbox 360" class="filter-nested"><span>HD Interno</span></label>
+                                <label class="checkbox-item"><input type="checkbox" value="HD externo" data-platform="Xbox 360" class="filter-nested"><span>HD Externo</span></label>
+                                <label class="checkbox-item"><input type="checkbox" value="Biblioteca" data-platform="Xbox 360" class="filter-nested"><span>Biblioteca</span></label>
+                                <label class="checkbox-item"><input type="checkbox" value="Mídia Física" data-platform="Xbox 360" class="filter-nested"><span>Mídia Física</span></label>
+                            </div>
+                        </details>
+                        <details class="accordion-item">
+                            <summary>Xbox One</summary>
+                            <div class="checkbox-list nested-list">
+                                <label class="checkbox-item"><input type="checkbox" value="HD interno" data-platform="Xbox One" class="filter-nested"><span>HD Interno</span></label>
+                                <label class="checkbox-item"><input type="checkbox" value="HD externo" data-platform="Xbox One" class="filter-nested"><span>HD Externo</span></label>
+                                <label class="checkbox-item"><input type="checkbox" value="Biblioteca" data-platform="Xbox One" class="filter-nested"><span>Biblioteca</span></label>
+                                <label class="checkbox-item"><input type="checkbox" value="Mídia Física" data-platform="Xbox One" class="filter-nested"><span>Mídia Física</span></label>
+                            </div>
+                        </details>
+                        <details class="accordion-item">
+                            <summary>XBOX Series S</summary>
+                            <div class="checkbox-list nested-list">
+                                <label class="checkbox-item"><input type="checkbox" value="HD interno" data-platform="Xbox S" class="filter-nested"><span>HD Interno</span></label>
+                                <label class="checkbox-item"><input type="checkbox" value="HD externo" data-platform="Xbox S" class="filter-nested"><span>HD Externo</span></label>
+                                <label class="checkbox-item"><input type="checkbox" value="Biblioteca" data-platform="Xbox S" class="filter-nested"><span>Biblioteca</span></label>
+                                <label class="checkbox-item"><input type="checkbox" value="Mídia Física" data-platform="Xbox S" class="filter-nested"><span>Mídia Física</span></label>
+                            </div>
+                        </details>
+                        <details class="accordion-item">
+                            <summary>XBOX Series X</summary>
+                            <div class="checkbox-list nested-list">
+                                <label class="checkbox-item"><input type="checkbox" value="HD interno" data-platform="Xbox Series X" class="filter-nested"><span>HD Interno</span></label>
+                                <label class="checkbox-item"><input type="checkbox" value="HD externo" data-platform="Xbox Series X" class="filter-nested"><span>HD Externo</span></label>
+                                <label class="checkbox-item"><input type="checkbox" value="Biblioteca" data-platform="Xbox Series X" class="filter-nested"><span>Biblioteca</span></label>
+                                <label class="checkbox-item"><input type="checkbox" value="Mídia Física" data-platform="Xbox Series X" class="filter-nested"><span>Mídia Física</span></label>
+                            </div>
+                        </details>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header glass-panel">
+                <h2>Seu Catálogo de Jogos</h2>
+                <div class="stats" id="gameStats">0 jogos encontrados</div>
+            </header>
+
+            <div class="games-grid" id="gamesGrid">
+                <!-- Cards de jogos gerados via JS -->
+                 <div class="loading">Carregando jogos...</div>
+            </div>
+
+            <div class="pagination-container" id="paginationContainer">
+                <!-- Gerado via JS -->
+            </div>
+
+            <div class="admin-section" id="adminSection" style="display: none;">
+                <div class="admin-header">
+                    <h3>Edição de Catálogo (JSON)</h3>
+                    <div class="admin-actions">
+                        <button id="btnAddRow" class="action-button success-button">+ Novo Jogo</button>
+                        <button id="btnDownloadJson" class="action-button primary-button">Salvar e Baixar JSON</button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table class="styled-table" id="adminTable">
+                        <thead>
+                            <tr>
+                                <th>Título</th>
+                                <th>Plataforma</th>
+                                <th>Armazenamento</th>
+                                <th>Empresa</th>
+                                <th>Ano</th>
+                                <th>Gênero</th>
+                                <th>URL Capa</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminTableBody">
+                            <!-- Gerado via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- JS -->
+    <script src="script.js"></script>
+</body>
+</html>

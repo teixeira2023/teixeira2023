@@ -1,0 +1,18 @@
+# Ignorar o script com a chave da API (dado sensível)
+rawg_scraper.py
+Joos360HDoriginal.csv
+Joos360HDoriginal.xlsx
+
+# Arquivos de ambiente virtual / Variáveis de ambiente (boa prática)
+.env
+.venv/
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Caches e arquivos temporários do Python
+__pycache__/
+*.py[cod]
+*$py.class
